@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
-from locomotor_learning_model.initializing.get_treadmill_speed import get_treadmill_speed
-from locomotor_learning_model.post_processing.convert_met_to_vo2 import (
+from invLocAd.initializing.get_treadmill_speed import get_treadmill_speed
+from invLocAd.post_processing.convert_met_to_vo2 import (
     convert_met_to_vo2,
 )
 

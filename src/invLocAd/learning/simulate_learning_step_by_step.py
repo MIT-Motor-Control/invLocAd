@@ -8,21 +8,21 @@ from typing import Any
 
 import numpy as np
 
-from locomotor_learning_model.initializing.get_treadmill_speed import get_treadmill_speed
-from locomotor_learning_model.learning.compute_energy_dynamics_model_rls_no_singular import (
+from invLocAd.initializing.get_treadmill_speed import get_treadmill_speed
+from invLocAd.learning.compute_energy_dynamics_model_rls_no_singular import (
     compute_energy_dynamics_model_rls_no_singular,
 )
-from locomotor_learning_model.learning.compute_model_dynamics_model_rls_no_singular import (
+from invLocAd.learning.compute_model_dynamics_model_rls_no_singular import (
     compute_model_dynamics_model_rls_no_singular,
 )
-from locomotor_learning_model.learning.compute_steady_energy_gradient_v2_no_singular import (
+from invLocAd.learning.compute_steady_energy_gradient_v2_no_singular import (
     compute_steady_energy_gradient_v2_no_singular,
 )
-from locomotor_learning_model.learning.error_from_memory_compute import error_from_memory_compute
-from locomotor_learning_model.learning.f_objective_asymmetric_nominal_8d_to_10d import (
+from invLocAd.learning.error_from_memory_compute import error_from_memory_compute
+from invLocAd.learning.f_objective_asymmetric_nominal_8d_to_10d import (
     f_objective_asymmetric_nominal_8d_to_10d,
 )
-from locomotor_learning_model.learning.gradient_of_error_from_memory_compute import (
+from invLocAd.learning.gradient_of_error_from_memory_compute import (
     gradient_of_error_from_memory_compute,
 )
 

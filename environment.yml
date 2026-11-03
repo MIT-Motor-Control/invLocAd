@@ -1,4 +1,4 @@
-name: loco-ada
+name: invLocAd
 channels:
   - conda-forge
   - nodefaults

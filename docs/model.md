@@ -4,7 +4,7 @@ The model has a low-level feedback controller that sets each step from the cente
 
 | | Python model | MATLAB baseline | MATLAB manuscript engine |
 |---|---|---|---|
-| Location | `src/locomotor_learning_model/` | `matlab/src/` | `matlab/manuscript/` |
+| Location | `src/invLocAd/` | `matlab/src/` | `matlab/manuscript/` |
 | Use | Run, pause and resume simulations; simulations of Supplementary Figures 2 and 4 | Reference for the Python model | Simulations of Figures 2–4 and Supplementary Figures 1 and 3 |
 | Split-belt protocol | 6 min tied, 45 min split, 5 min tied; 15 s ramps | Same as Python | 1 min tied, 45 min split; 25 s ramp |
 | Belt speeds | 1.0 m/s difference by default (`--split-speed-diff`) | 1.0 m/s difference, fixed in `makeTreadmillSpeed_Split.m` | Experimental speeds × 0.5 |
@@ -28,18 +28,18 @@ The objective is J₀ = (1 − ψ) e + ψ M s (Eq. 1), where e is the metabolic 
 ## Python model
 
 ```sh
-loco-simulate demo
-loco-simulate run --seed 42 --iterations 1000 --output-dir outputs/example
-loco-simulate run --split-or-tied tied --seed 1 --iterations 200 --output-dir outputs/tied
+invLocAd-simulate demo
+invLocAd-simulate run --seed 42 --iterations 1000 --output-dir outputs/example
+invLocAd-simulate run --split-or-tied tied --seed 1 --iterations 200 --output-dir outputs/tied
 ```
 
-`run` writes `run.npz` (settings and controller, body-state, energy and learner histories), `metadata.json` (seed, condition, protocol, configuration checksum, software versions and iteration counts), a checkpoint and a summary figure. The full split-belt protocol has 3,200 iterations and the tied protocol 1,000. Other options include `--transition-time` (seconds) and `--speed-protocol`, which takes a quoted name: `classic split belt` (default) or `single speed` for split runs, and `four speed changes` (default) or another protocol listed in `parameter_loading/make_treadmill_speed_tied.py` for tied runs. See `loco-simulate run --help` for all options. An omitted seed is generated and recorded.
+`run` writes `run.npz` (settings and controller, body-state, energy and learner histories), `metadata.json` (seed, condition, protocol, configuration checksum, software versions and iteration counts), a checkpoint and a summary figure. The full split-belt protocol has 3,200 iterations and the tied protocol 1,000. Other options include `--transition-time` (seconds) and `--speed-protocol`, which takes a quoted name: `classic split belt` (default) or `single speed` for split runs, and `four speed changes` (default) or another protocol listed in `parameter_loading/make_treadmill_speed_tied.py` for tied runs. See `invLocAd-simulate run --help` for all options. An omitted seed is generated and recorded.
 
 ### Pause and resume
 
 ```sh
-loco-simulate run --seed 42 --iterations 100 --stop-after 40 --output-dir outputs/paused
-loco-simulate resume outputs/paused/checkpoint.npz --output-dir outputs/resumed
+invLocAd-simulate run --seed 42 --iterations 100 --stop-after 40 --output-dir outputs/paused
+invLocAd-simulate resume outputs/paused/checkpoint.npz --output-dir outputs/resumed
 ```
 
 `--iterations` is the total number of learning iterations and `--stop-after` the iteration at which to stop; both count completed iterations. A checkpoint is saved every 25 iterations (`--checkpoint-every`) and at the end. It stores the body state, treadmill time, controller, gradient estimate, memory, estimator history, all recorded histories and the random-number-generator state, so a resumed run is identical to an uninterrupted run. `resume` checks the model version, the NumPy and SciPy versions, the settings and the seed, and refuses a checkpoint that does not match. It writes to `--output-dir` (default `outputs/resumed`) and leaves the input checkpoint unchanged unless `--checkpoint` names that file. Results and checkpoints are NumPy archives read with `allow_pickle=False`.
@@ -47,13 +47,13 @@ loco-simulate resume outputs/paused/checkpoint.npz --output-dir outputs/resumed
 The DATA download includes `checkpoints/example_seed42.npz`, a run paused after 10 of 20 iterations that resumes with NumPy 1.26.4 and SciPy 1.17.1, the versions pinned in `requirements-lock.txt`:
 
 ```sh
-loco-simulate resume data/locomotor_learning_model-DATA/checkpoints/example_seed42.npz --output-dir outputs/checkpoint-example
+invLocAd-simulate resume data/invLocAd-DATA/checkpoints/example_seed42.npz --output-dir outputs/checkpoint-example
 ```
 
 ### Python API
 
 ```python
-from locomotor_learning_model import load_simulation_results, plot_simulation_results, run_simulation
+from invLocAd import load_simulation_results, plot_simulation_results, run_simulation
 
 result = run_simulation(seed=42, num_iterations=100, make_plots=False, output_dir="outputs/run")
 saved = load_simulation_results("outputs/run/run.npz")
@@ -81,11 +81,11 @@ With exploration and measurement noise set to zero, the Python model and the MAT
 
 ```matlab
 addpath('matlab/validation')
-export_reference_run('outputs/locad_reference.mat', 40)
+export_reference_run('outputs/invLocAd_reference.mat', 40)
 ```
 
 ```sh
-python scripts/validate_matlab_python_parity.py outputs/locad_reference.mat
+python scripts/validate_matlab_python_parity.py outputs/invLocAd_reference.mat
 ```
 
 Without noise the learner receives no gradient, so this comparison checks the stance dynamics, energetics and objective rather than learning; `tests/test_model_regression.py` pins the results of seeded runs with learning. Random seeds do not carry across languages, so noisy runs differ between Python and MATLAB.

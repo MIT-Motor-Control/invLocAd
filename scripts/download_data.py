@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import http.client
-import json
 import os
 import re
 import shutil
@@ -22,20 +21,12 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-RECORD_URL = "https://zenodo.org/records/23402153/files/"
-MANIFEST_NAME = "locomotor_learning_model-DATA.manifest.json"
-DATA_ROOT = "locomotor_learning_model-DATA"
+RECORD_URL = "https://zenodo.org/records/23904047/files/"
+DATA_ROOT = "invLocAd-DATA"
 ARCHIVE_NAME = f"{DATA_ROOT}.zip"
-MANIFEST_URL = RECORD_URL + MANIFEST_NAME
-# Manifest and archive pins of the split (multi-part) release, used only with --manifest
-# or --parts-dir. The default download is the single ZIP pinned by ARCHIVE_SHA256.
-MANIFEST_SHA256 = "1040a607ffb7418436804ad63ebd79e834d5f988afd9006a3301d3e723bbbb4e"
-LEGACY_ARCHIVE_SHA256 = "7fcd2f925102bb8a2231932ab79d3bebaee9b92e32c3917150d52d09294424d6"
-LEGACY_ARCHIVE_BYTES = 13_335_229_428
-ARCHIVE_SHA256 = "0c9bef014af484a419746141cd887eb0d1e66020cad4f593897cb7646eff26aa"
-ARCHIVE_BYTES = 13_269_920_505
+ARCHIVE_SHA256 = "16ce92fd0fac4fc5a3686e4bcd0180f80f5bd84a0ec928e95e8de4826cdb7ffd"
+ARCHIVE_BYTES = 13_269_858_121
 CHUNK_SIZE = 4 * 1024 * 1024
-SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def regular(path: Path) -> bool:
@@ -77,39 +68,6 @@ def verified(path: Path, item: dict) -> bool:
     return regular(path) and path.stat().st_size == item["bytes"] and sha256(path) == item["sha256"]
 
 
-def validate_manifest(value: dict) -> dict:
-    """Return a split-release manifest after checking its schema, piece names and sizes.
-
-    Args:
-        value: Parsed manifest with ``schema_version``, ``archive`` and the ordered ``parts``;
-            the archive and each part have a ``name``, ``bytes`` and ``sha256``.
-
-    Returns:
-        ``value``, unchanged.
-
-    Raises:
-        ValueError: If the manifest is malformed or the piece sizes do not sum to the archive.
-    """
-    if not isinstance(value, dict) or value.get("schema_version") != 1:
-        raise ValueError("Unsupported DATA download manifest")
-    archive, parts = value.get("archive"), value.get("parts")
-    if not isinstance(archive, dict) or not isinstance(parts, list) or not parts:
-        raise ValueError("Manifest must identify an archive and its ordered pieces")
-    if archive.get("name") != ARCHIVE_NAME:
-        raise ValueError("Manifest must describe the locomotor learning DATA archive")
-    for item in [archive, *parts]:
-        if not isinstance(item, dict) or type(item.get("bytes")) is not int or item["bytes"] <= 0:
-            raise ValueError("Every archive and piece needs a positive byte size")
-        if not isinstance(item.get("sha256"), str) or not SHA256.fullmatch(item["sha256"]):
-            raise ValueError("Every archive and piece needs a SHA-256 checksum")
-    names = [f"{ARCHIVE_NAME}.part{number:03d}" for number in range(1, len(parts) + 1)]
-    if [item.get("name") for item in parts] != names:
-        raise ValueError("Manifest pieces must be uniquely named and ordered from part001")
-    if sum(item["bytes"] for item in parts) != archive["bytes"]:
-        raise ValueError("Manifest piece sizes do not add up to the archive size")
-    return value
-
-
 def request(url: str, *, headers: dict | None = None):
     """Open ``url`` with the package User-Agent, extra ``headers`` and a 60 s timeout.
 
@@ -122,49 +80,10 @@ def request(url: str, *, headers: dict | None = None):
     """
     return urllib.request.urlopen(
         urllib.request.Request(
-            url, headers={"User-Agent": "locomotor-learning-model/0.3.0", **(headers or {})}
+            url, headers={"User-Agent": "invLocAd/0.4.0", **(headers or {})}
         ),
         timeout=60,
     )
-
-
-def load_manifest(location: str) -> dict:
-    """Load and validate the pinned split-release manifest.
-
-    Args:
-        location: ``MANIFEST_URL`` or a local manifest path; other URLs are rejected.
-
-    Returns:
-        The validated manifest.
-
-    Raises:
-        ValueError: If the manifest exceeds 1 MB, differs from ``MANIFEST_SHA256`` or does
-            not describe the pinned split-release archive.
-    """
-    if location == MANIFEST_URL:
-        with request(location) as response:
-            payload = response.read(1024 * 1024 + 1)
-        if len(payload) > 1024 * 1024:
-            raise ValueError("Download manifest exceeds the 1 MB size limit")
-    else:
-        if "://" in location:
-            raise ValueError(
-                "Only the pinned Zenodo release manifest URL or a local file is accepted"
-            )
-        path = Path(location)
-        regular(path)
-        if path.stat().st_size > 1024 * 1024:
-            raise ValueError("Download manifest exceeds the 1 MB size limit")
-        payload = path.read_bytes()
-    if hashlib.sha256(payload).hexdigest() != MANIFEST_SHA256:
-        raise ValueError("Manifest checksum differs from the pinned DATA release")
-    value = validate_manifest(json.loads(payload))
-    if (
-        value["archive"]["sha256"] != LEGACY_ARCHIVE_SHA256
-        or value["archive"]["bytes"] != LEGACY_ARCHIVE_BYTES
-    ):
-        raise ValueError("Manifest does not identify the pinned legacy DATA release archive")
-    return value
 
 
 def free_space(directory: Path, needed: int):
@@ -179,8 +98,8 @@ def free_space(directory: Path, needed: int):
 
 
 def download_file(
-    item: dict, cache: Path, *, resume: bool = False, missing_ok: bool = False
-) -> Path | None:
+    item: dict, cache: Path, *, resume: bool = False
+) -> Path:
     """Download one release file into ``cache`` and verify its size and SHA-256.
 
     A verified cached copy is reused. Network and file errors other than HTTP 403 and 404
@@ -190,10 +109,9 @@ def download_file(
         item: Mapping with the file ``name``, ``bytes`` and ``sha256``.
         cache: Download directory.
         resume: Continue a ``.partial`` file with an HTTP Range request; otherwise restart.
-        missing_ok: Return None instead of raising when the server responds 404.
 
     Returns:
-        Path of the verified file, or None if missing and ``missing_ok`` is true.
+        Path of the verified file.
 
     Raises:
         FileNotFoundError: If Zenodo responds 403 or 404.
@@ -270,14 +188,12 @@ def download_file(
             os.replace(partial, target)
             return target
         except (OSError, urllib.error.URLError, http.client.HTTPException) as error:
-            if missing_ok and isinstance(error, urllib.error.HTTPError) and error.code == 404:
-                return None
             if isinstance(error, urllib.error.HTTPError) and error.code in {403, 404}:
                 raise FileNotFoundError(
                     f"Zenodo DATA is unavailable for public download (HTTP {error.code}). "
                     "The matching release may be unpublished or access-restricted. "
-                    "Check https://zenodo.org/records/23402153, or install an existing ZIP "
-                    "with python scripts/download_data.py --archive /path/to/locomotor_learning_model-DATA.zip."
+                    "Check https://zenodo.org/records/23904047, or install an existing ZIP "
+                    "with python scripts/download_data.py --archive /path/to/invLocAd-DATA.zip."
                 ) from None
             if attempt == 3:
                 raise
@@ -286,47 +202,6 @@ def download_file(
             )
             time.sleep(attempt)
     raise AssertionError("Unreachable download state")
-
-
-def assemble(parts: list[Path], manifest: dict, cache: Path) -> Path:
-    """Concatenate split-release pieces into the archive in ``cache`` and verify it.
-
-    A verified archive already in ``cache`` is reused.
-
-    Args:
-        parts: Verified pieces in manifest order.
-        manifest: Validated split-release manifest.
-        cache: Directory for the assembled archive.
-
-    Returns:
-        Path of the verified archive.
-
-    Raises:
-        ValueError: If the assembled archive fails its size or checksum check.
-    """
-    item = manifest["archive"]
-    target = cache / item["name"]
-    if verified(target, item):
-        print("Verified previously assembled DATA archive", flush=True)
-        return target
-    partial = target.with_name(target.name + ".partial")
-    regular(partial)
-    free_space(cache, item["bytes"])
-    digest, count = hashlib.sha256(), 0
-    print("Assembling pieces and checking the complete archive", flush=True)
-    with partial.open("wb") as output:
-        for part in parts:
-            with part.open("rb") as source:
-                for block in iter(lambda: source.read(CHUNK_SIZE), b""):
-                    digest.update(block)
-                    count += len(block)
-                    output.write(block)
-    if count != item["bytes"] or digest.hexdigest() != item["sha256"]:
-        raise ValueError(
-            "Complete DATA archive failed its size/checksum check; nothing was extracted"
-        )
-    os.replace(partial, target)
-    return target
 
 
 def zip_members(
@@ -453,31 +328,27 @@ def extract(archive_path: Path, destination: Path) -> int:
     return len(members)
 
 
-def installation_paths(destination: Path, cache: Path, parts_dir: Path | None = None):
+def installation_paths(destination: Path, cache: Path):
     """Check and return absolute ``(destination, cache)`` paths, creating the cache.
 
     Args:
         destination: DATA folder to create.
         cache: Download cache directory.
-        parts_dir: Directory of local split-release pieces, or None.
 
     Raises:
         FileExistsError: If ``destination`` already exists.
-        ValueError: If the cache is a link or non-directory, lies inside ``destination``,
-            or is the same directory as ``parts_dir``.
+        ValueError: If the cache is a link or non-directory, or lies inside ``destination``.
     """
     destination, cache = Path(destination).absolute(), Path(cache).absolute()
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(
             f"Destination already exists and will not be changed: {destination}. "
-            "Use the existing dataset with loco-publication prepare, or choose another --destination."
+            "Use the existing dataset with invLocAd-publication prepare, or choose another --destination."
         )
     if cache.is_symlink() or (cache.exists() and not cache.is_dir()):
         raise ValueError(f"Download cache must be a directory, not a link: {cache}")
     if cache.resolve().is_relative_to(destination.resolve()):
         raise ValueError("Download cache must be outside the installation destination")
-    if parts_dir is not None and cache.resolve() == Path(parts_dir).resolve():
-        raise ValueError("Use a cache directory separate from --parts-dir to keep local pieces")
     cache.mkdir(parents=True, exist_ok=True)
     return destination, cache
 
@@ -516,49 +387,6 @@ def finish_install(
         except OSError:
             pass
     return {"destination": str(destination), "files": count, "archive_sha256": item["sha256"]}
-
-
-def install(
-    manifest: dict,
-    destination: Path,
-    cache: Path,
-    parts_dir: Path | None = None,
-    *,
-    keep_downloads: bool = False,
-) -> dict:
-    """Install the split release from downloaded or local pieces.
-
-    Args:
-        manifest: Split-release manifest.
-        destination: New DATA folder to create.
-        cache: Directory for downloaded pieces and the assembled archive.
-        parts_dir: Directory of already downloaded pieces; None downloads them.
-        keep_downloads: Keep the cached archive and downloaded pieces after extraction.
-
-    Returns:
-        Installation summary from ``finish_install``.
-    """
-    manifest = validate_manifest(manifest)
-    destination, cache = installation_paths(destination, cache, parts_dir)
-    parts = []
-    for item in manifest["parts"]:
-        if parts_dir is None:
-            part = download_file(item, cache)
-        else:
-            part = Path(parts_dir) / item["name"]
-            if not verified(part, item):
-                raise ValueError(f"Local piece is missing or failed its checksum: {part}")
-            print(f"Verified local {item['name']}", flush=True)
-        parts.append(part)
-    archive = assemble(parts, manifest, cache)
-    return finish_install(
-        archive,
-        manifest["archive"],
-        destination,
-        cache,
-        [archive, *(parts if parts_dir is None else [])],
-        keep_downloads,
-    )
 
 
 def install_release(destination: Path, cache: Path, *, keep_downloads: bool = False) -> dict:
@@ -602,7 +430,7 @@ def install_local_archive(archive: Path, destination: Path) -> dict:
     if destination.exists() or destination.is_symlink():
         raise FileExistsError(
             f"Destination already exists and is unchanged: {destination}. "
-            "Run loco-publication prepare, or choose another --destination."
+            "Run invLocAd-publication prepare, or choose another --destination."
         )
     if not regular(archive):
         raise FileNotFoundError(f"Local DATA ZIP not found: {archive}")
@@ -634,39 +462,21 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--archive", type=Path, help="Verify and install an existing DATA ZIP without downloading or changing it"
     )
-    parser.add_argument(
-        "--manifest",
-        help="Install the split release from its pinned manifest (Zenodo URL or local path)",
-    )
-    parser.add_argument(
-        "--parts-dir", type=Path, help="Install the split release from pieces in this directory"
-    )
     parser.add_argument("--destination", type=Path, default=Path("data") / DATA_ROOT)
-    parser.add_argument("--cache-dir", type=Path, default=Path("outputs/data-download/23402153"))
+    parser.add_argument("--cache-dir", type=Path, default=Path("outputs/data-download/23904047"))
     parser.add_argument(
-        "--keep-downloads", action="store_true", help="Retain verified cached ZIP and any pieces"
+        "--keep-downloads", action="store_true", help="Retain the verified cached ZIP"
     )
     args = parser.parse_args(argv)
-    if args.archive is not None and (args.manifest is not None or args.parts_dir is not None):
-        parser.error("--archive cannot be combined with --manifest or --parts-dir")
     try:
         # Check the destination before any network request.
         if args.destination.exists() or args.destination.is_symlink():
             raise FileExistsError(
                 f"Destination already exists and is unchanged: {args.destination}. "
-                "Run loco-publication prepare, or choose another --destination."
+                "Run invLocAd-publication prepare, or choose another --destination."
             )
         if args.archive is not None:
             result = install_local_archive(args.archive, args.destination)
-        elif args.parts_dir is not None or args.manifest is not None:
-            location = args.manifest or str(args.parts_dir / MANIFEST_NAME)
-            result = install(
-                load_manifest(location),
-                args.destination,
-                args.cache_dir,
-                args.parts_dir,
-                keep_downloads=args.keep_downloads,
-            )
         else:
             result = install_release(
                 args.destination, args.cache_dir, keep_downloads=args.keep_downloads
@@ -685,7 +495,7 @@ def main(argv=None) -> int:
         )
     print(f"DATA installed in {result['destination']} ({result['files']} files).")
     print(f"Verified archive SHA-256: {result['archive_sha256']}")
-    print("Next: loco-publication prepare")
+    print("Next: invLocAd-publication prepare")
     return 0
 
 

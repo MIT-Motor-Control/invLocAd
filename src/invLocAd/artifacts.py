@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 
 SCHEMA_VERSION = 1
-MODEL_VERSION = "locad-python-1"
+MODEL_VERSION = "invLocAd-python-1"
 
 
 def _encode(value: Any, arrays: dict[str, np.ndarray]) -> Any:

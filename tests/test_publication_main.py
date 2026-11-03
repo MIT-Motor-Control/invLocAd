@@ -8,8 +8,8 @@ import numpy as np
 import pytest
 from scipy.io import loadmat, savemat
 
-from locomotor_learning_model.publication.data import prepare_data, sha256
-from locomotor_learning_model.publication.main_figures import (
+from invLocAd.publication.data import prepare_data, sha256
+from invLocAd.publication.main_figures import (
     _rank_sum_probability,
     _sanchez,
     fall_filename,
@@ -23,7 +23,7 @@ from locomotor_learning_model.publication.main_figures import (
     parameter_statistics,
     render_main,
 )
-from locomotor_learning_model.publication.trajectory import (
+from invLocAd.publication.trajectory import (
     SOURCE_FILES,
     read_storage,
     source_energy_cost,
@@ -208,7 +208,7 @@ def test_missing_fall_trial_blocks_without_changing_denominator(tmp_path):
 
 
 def test_inconsistent_data_is_not_reported_as_missing(tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import main_figures
+    from invLocAd.publication import main_figures
 
     def inconsistent(_):
         """Raise the error of an inconsistent input."""
@@ -314,7 +314,7 @@ def test_figure1e_significant_intervals_match_paper(publication_data):
 
 @pytest.mark.integration
 def test_fall_plot_conventions_match_paper(publication_data, tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import main_figures
+    from invLocAd.publication import main_figures
 
     seen = {}
 

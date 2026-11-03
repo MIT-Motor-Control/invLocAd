@@ -1,4 +1,4 @@
-"""Module entry point for ``python -m locomotor_learning_model``."""
+"""Module entry point for ``python -m invLocAd``."""
 
 from .cli import main
 

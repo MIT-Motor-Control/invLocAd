@@ -4,7 +4,6 @@ import hashlib
 import http.client
 import importlib.util
 import io
-import json
 import stat
 import urllib.error
 import zipfile
@@ -25,11 +24,7 @@ def digest(data):
 
 
 def release(tmp_path, entries=None):
-    """Write a ZIP split into 128-byte pieces with its manifest.
-
-    Returns:
-        Tuple of the manifest, the folder holding the pieces and the full ZIP bytes.
-    """
+    """Write a small DATA ZIP and return its descriptor, path and bytes."""
     contents = entries or [
         (f"{download.DATA_ROOT}/README.md", b"Dataset provenance\n"),
         (f"{download.DATA_ROOT}/processed_csv/example.csv", b"time,value\n0,1\n"),
@@ -39,25 +34,10 @@ def release(tmp_path, entries=None):
         for name, content in contents:
             archive.writestr(name, content)
     payload = buffer.getvalue()
-    folder = tmp_path / "pieces"
-    folder.mkdir()
-    parts = []
-    for number, start in enumerate(range(0, len(payload), 128), 1):
-        chunk = payload[start : start + 128]
-        name = f"{download.ARCHIVE_NAME}.part{number:03d}"
-        (folder / name).write_bytes(chunk)
-        parts.append({"name": name, "bytes": len(chunk), "sha256": digest(chunk)})
-    manifest = {
-        "schema_version": 1,
-        "archive": {
-            "name": download.ARCHIVE_NAME,
-            "bytes": len(payload),
-            "sha256": digest(payload),
-        },
-        "parts": parts,
-    }
-    (folder / download.MANIFEST_NAME).write_text(json.dumps(manifest))
-    return manifest, folder, payload
+    path = tmp_path / download.ARCHIVE_NAME
+    path.write_bytes(payload)
+    item = {"name": download.ARCHIVE_NAME, "bytes": len(payload), "sha256": digest(payload)}
+    return item, path, payload
 
 
 class Response(io.BytesIO):
@@ -70,18 +50,15 @@ class Response(io.BytesIO):
         self.headers.update(headers or {})
 
 
-def pin_release(monkeypatch, manifest, parts):
-    """Pin the expected archive size and checksums to a synthetic release."""
-    monkeypatch.setattr(download, "ARCHIVE_BYTES", manifest["archive"]["bytes"])
-    monkeypatch.setattr(download, "ARCHIVE_SHA256", manifest["archive"]["sha256"])
-    monkeypatch.setattr(
-        download, "MANIFEST_SHA256", digest((parts / download.MANIFEST_NAME).read_bytes())
-    )
+def pin_release(monkeypatch, item):
+    """Pin the expected archive size and checksum to a synthetic release."""
+    monkeypatch.setattr(download, "ARCHIVE_BYTES", item["bytes"])
+    monkeypatch.setattr(download, "ARCHIVE_SHA256", item["sha256"])
 
 
-def test_default_command_prefers_complete_zip(tmp_path, monkeypatch):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+def test_default_command_downloads_pinned_zip(tmp_path, monkeypatch):
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     calls = []
 
     def request(url, *, headers=None):
@@ -101,9 +78,9 @@ def test_default_command_prefers_complete_zip(tmp_path, monkeypatch):
     assert (destination / "README.md").read_text() == "Dataset provenance\n"
 
 
-def test_whole_zip_404_does_not_select_older_split_release(tmp_path, monkeypatch):
-    manifest, parts, _ = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+def test_missing_zip_stops_after_one_request(tmp_path, monkeypatch):
+    item, _archive, _ = release(tmp_path)
+    pin_release(monkeypatch, item)
     calls = []
 
     def request(url, *, headers=None):
@@ -112,7 +89,7 @@ def test_whole_zip_404_does_not_select_older_split_release(tmp_path, monkeypatch
         calls.append(name)
         if name == download.ARCHIVE_NAME:
             raise urllib.error.HTTPError(url, 404, "Not Found", {}, None)
-        pytest.fail("The whole-archive release must not request split pieces")
+        pytest.fail("The downloader requested an unexpected file")
 
     monkeypatch.setattr(download, "request", request)
     monkeypatch.setattr(download.time, "sleep", lambda _: None)
@@ -123,7 +100,7 @@ def test_whole_zip_404_does_not_select_older_split_release(tmp_path, monkeypatch
 
 
 @pytest.mark.parametrize("error_code", [403, 429, 500, None])
-def test_network_errors_never_select_split_route(tmp_path, monkeypatch, error_code):
+def test_network_errors_retry_the_same_zip(tmp_path, monkeypatch, error_code):
     calls = []
 
     def request(url, *, headers=None):
@@ -167,8 +144,8 @@ def test_unavailable_public_release_has_actionable_cli_error(tmp_path, monkeypat
 
 @pytest.mark.parametrize("archive_in_cache", [False, True])
 def test_local_archive_cli_verifies_installs_and_preserves_source(tmp_path, monkeypatch, archive_in_cache):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     if archive_in_cache:
         cache.mkdir()
@@ -189,8 +166,8 @@ def test_local_archive_cli_verifies_installs_and_preserves_source(tmp_path, monk
 
 @pytest.mark.parametrize("corruption", ["size", "checksum"])
 def test_local_archive_corruption_never_extracts_or_changes_source(tmp_path, monkeypatch, corruption):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     archive = tmp_path / "data.zip"
     invalid = payload[:-1] if corruption == "size" else b"!" + payload[1:]
     archive.write_bytes(invalid)
@@ -231,10 +208,10 @@ def test_local_archive_refuses_existing_destination_before_hashing(tmp_path, mon
 
 
 def test_local_archive_uses_safe_extraction(tmp_path, monkeypatch):
-    manifest, parts, payload = release(tmp_path, [
+    item, archive, payload = release(tmp_path, [
         (f"{download.DATA_ROOT}/valid.txt", b"valid"), ("../escape.txt", b"unsafe")
     ])
-    pin_release(monkeypatch, manifest, parts)
+    pin_release(monkeypatch, item)
     archive = tmp_path / "data.zip"
     archive.write_bytes(payload)
     with pytest.raises(ValueError, match="ZIP"):
@@ -244,18 +221,10 @@ def test_local_archive_uses_safe_extraction(tmp_path, monkeypatch):
     assert archive.read_bytes() == payload
 
 
-@pytest.mark.parametrize("split_option", ["--parts-dir", "--manifest"])
-def test_local_archive_cannot_mix_with_split_release_options(tmp_path, monkeypatch, split_option):
-    monkeypatch.setattr(download, "install_local_archive", lambda *a: pytest.fail("Conflicting arguments reached installer"))
-    with pytest.raises(SystemExit) as error:
-        download.main(["--archive", str(tmp_path / "data.zip"), split_option, "unused"])
-    assert error.value.code == 2
-
-
 @pytest.mark.parametrize("corruption", ["length", "checksum"])
-def test_wrong_whole_zip_never_falls_back_or_extracts(tmp_path, monkeypatch, corruption):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+def test_wrong_zip_never_extracts(tmp_path, monkeypatch, corruption):
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     calls = []
 
     def request(url, *, headers=None):
@@ -276,8 +245,8 @@ def test_wrong_whole_zip_never_falls_back_or_extracts(tmp_path, monkeypatch, cor
 def test_whole_zip_resumes_or_safely_restarts_when_range_ignored(
     tmp_path, monkeypatch, ignores_range
 ):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     cache.mkdir()
     partial = cache / f"{download.ARCHIVE_NAME}.partial"
@@ -303,8 +272,8 @@ def test_whole_zip_resumes_or_safely_restarts_when_range_ignored(
 
 @pytest.mark.parametrize("initial_offset", [0, 43])
 def test_interrupted_whole_zip_retry_uses_new_offset(tmp_path, monkeypatch, initial_offset):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     calls = []
     cache = tmp_path / "cache"
     cache.mkdir()
@@ -351,8 +320,8 @@ def test_interrupted_whole_zip_retry_uses_new_offset(tmp_path, monkeypatch, init
 
 @pytest.mark.parametrize("invalid", ["start", "end", "total", "missing", "length", "encoding"])
 def test_bad_range_response_preserves_partial_and_never_extracts(tmp_path, monkeypatch, invalid):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     cache.mkdir()
     partial = cache / f"{download.ARCHIVE_NAME}.partial"
@@ -379,8 +348,8 @@ def test_bad_range_response_preserves_partial_and_never_extracts(tmp_path, monke
 
 @pytest.mark.parametrize("state", ["complete", "oversized", "corrupt_complete"])
 def test_whole_partial_is_checked_before_request(tmp_path, monkeypatch, state):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     cache.mkdir()
     partial = cache / f"{download.ARCHIVE_NAME}.partial"
@@ -401,8 +370,8 @@ def test_whole_partial_is_checked_before_request(tmp_path, monkeypatch, state):
 
 
 def test_corrupt_resumed_prefix_fails_whole_checksum(tmp_path, monkeypatch):
-    manifest, parts, payload = release(tmp_path)
-    pin_release(monkeypatch, manifest, parts)
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     cache.mkdir()
     partial = cache / f"{download.ARCHIVE_NAME}.partial"
@@ -422,92 +391,48 @@ def test_corrupt_resumed_prefix_fails_whole_checksum(tmp_path, monkeypatch):
     assert not (tmp_path / "data").exists()
 
 
-def test_offline_install_preserves_local_pieces_and_unrelated_cache(tmp_path):
-    manifest, parts, _ = release(tmp_path)
-    originals = {p.name: p.read_bytes() for p in parts.iterdir()}
+def test_install_reuses_cached_zip_and_preserves_unrelated_files(tmp_path, monkeypatch):
+    item, archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     cache.mkdir()
+    (cache / download.ARCHIVE_NAME).write_bytes(payload)
     (cache / "unrelated.txt").write_text("keep me")
+    monkeypatch.setattr(download, "request", lambda *a, **k: pytest.fail("Cached ZIP used network"))
     destination = tmp_path / "data" / download.DATA_ROOT
-    result = download.install(manifest, destination, cache, parts)
+    result = download.install_release(destination, cache)
     assert result["files"] == 2
-    assert result["archive_sha256"] == manifest["archive"]["sha256"]
+    assert result["archive_sha256"] == item["sha256"]
     assert (destination / "processed_csv/example.csv").read_bytes() == b"time,value\n0,1\n"
-    assert {p.name: p.read_bytes() for p in parts.iterdir()} == originals
+    assert archive.read_bytes() == payload
     assert list(cache.iterdir()) == [cache / "unrelated.txt"]
 
 
 def test_cleanup_failure_reports_successful_install(tmp_path, monkeypatch, capsys):
-    manifest, parts, _ = release(tmp_path)
+    item, _archive, payload = release(tmp_path)
+    pin_release(monkeypatch, item)
     cache = tmp_path / "cache"
     original_unlink = Path.unlink
 
     def unlink(path, *args, **kwargs):
-        """Fail to delete the cached archive; delete other paths normally."""
         if path == cache / download.ARCHIVE_NAME:
             raise PermissionError("test cleanup failure")
         return original_unlink(path, *args, **kwargs)
 
     monkeypatch.setattr(Path, "unlink", unlink)
+    monkeypatch.setattr(download, "request", lambda *a, **k: Response(payload))
     destination = tmp_path / "data"
-    result = download.install(manifest, destination, cache, parts)
+    result = download.install_release(destination, cache)
     assert result["files"] == 2
     assert (destination / "README.md").exists()
     assert (cache / download.ARCHIVE_NAME).is_file()
     assert "DATA installed; could not remove cached" in capsys.readouterr().out
 
 
-def test_download_reuses_completed_piece_after_interruption(tmp_path, monkeypatch):
-    manifest, parts, _ = release(tmp_path)
-    cache = tmp_path / "cache"
-    cache.mkdir()
-    first = manifest["parts"][0]["name"]
-    (cache / first).write_bytes((parts / first).read_bytes())
-    calls = []
-
-    class Interrupted(Response):
-        """Response that delivers 9 bytes and then raises KeyboardInterrupt."""
-
-        def read(self, size=-1):
-            """Return the first 9 bytes; raise KeyboardInterrupt on the next read."""
-            if self.tell():
-                raise KeyboardInterrupt
-            return super().read(9)
-
-    def interrupted(url):
-        """Return an interrupted response for the requested piece."""
-        name = url.rsplit("/", 1)[-1]
-        calls.append(name)
-        return Interrupted((parts / name).read_bytes())
-
-    monkeypatch.setattr(download, "request", interrupted)
-    destination = tmp_path / "data"
-    with pytest.raises(KeyboardInterrupt):
-        download.install(manifest, destination, cache)
-    assert not destination.exists()
-    second = manifest["parts"][1]["name"]
-    assert (cache / f"{second}.partial").stat().st_size == 9
-    assert not (cache / second).exists()
-
-    def successful(url):
-        """Return the complete requested piece."""
-        name = url.rsplit("/", 1)[-1]
-        calls.append(name)
-        return Response((parts / name).read_bytes())
-
-    monkeypatch.setattr(download, "request", successful)
-    download.install(manifest, destination, cache)
-    assert first not in calls
-    assert calls.count(second) == 2
-    assert (destination / "README.md").read_text() == "Dataset provenance\n"
-    assert not cache.exists()
-
-
 @pytest.mark.parametrize("explicit_error", [True, False])
 def test_incomplete_http_body_is_retried(tmp_path, monkeypatch, explicit_error):
-    manifest, parts, _ = release(tmp_path)
-    item = manifest["parts"][0]
-    payload = (parts / item["name"]).read_bytes()
+    item, archive, _ = release(tmp_path)
+    payload = archive.read_bytes()
     attempts = []
 
     class Truncated(Response):
@@ -522,7 +447,7 @@ def test_incomplete_http_body_is_retried(tmp_path, monkeypatch, explicit_error):
             return super().read(9)
 
     def request(_):
-        """Return a truncated response on the first attempt and the full piece afterwards."""
+        """Return a truncated response first, then the full archive."""
         attempts.append(1)
         return Truncated(payload) if len(attempts) == 1 else Response(payload)
 
@@ -535,26 +460,12 @@ def test_incomplete_http_body_is_retried(tmp_path, monkeypatch, explicit_error):
 
 
 def test_oversized_response_stops_before_writing_excess(tmp_path, monkeypatch):
-    item = {"name": f"{download.ARCHIVE_NAME}.part001", "bytes": 3, "sha256": digest(b"abc")}
+    item = {"name": download.ARCHIVE_NAME, "bytes": 3, "sha256": digest(b"abc")}
     monkeypatch.setattr(download, "request", lambda _: Response(b"abcd", length=False))
     with pytest.raises(ValueError, match="exceeds expected size"):
         download.download_file(item, tmp_path)
     assert not (tmp_path / item["name"]).exists()
     assert (tmp_path / f"{item['name']}.partial").stat().st_size <= 3
-
-
-@pytest.mark.parametrize("which", ["piece", "archive"])
-def test_checksum_failure_prevents_extraction(tmp_path, which):
-    manifest, parts, _ = release(tmp_path)
-    if which == "piece":
-        path = parts / manifest["parts"][0]["name"]
-        path.write_bytes(b"!" + path.read_bytes()[1:])
-    else:
-        manifest["archive"]["sha256"] = "0" * 64
-    destination = tmp_path / "data"
-    with pytest.raises(ValueError, match="checksum"):
-        download.install(manifest, destination, tmp_path / "cache", parts)
-    assert not destination.exists()
 
 
 @pytest.mark.parametrize(
@@ -571,12 +482,12 @@ def test_checksum_failure_prevents_extraction(tmp_path, which):
     ],
 )
 def test_unsafe_late_zip_member_leaves_no_destination(tmp_path, name):
-    manifest, parts, _ = release(
+    _item, archive, _ = release(
         tmp_path, [(f"{download.DATA_ROOT}/valid.txt", b"valid"), (name, b"unsafe")]
     )
     destination = tmp_path / "installed"
     with pytest.raises(ValueError, match="ZIP"):
-        download.install(manifest, destination, tmp_path / "cache", parts)
+        download.extract(archive, destination)
     assert not destination.exists()
     assert not list(tmp_path.glob("data-extract-*"))
     assert not (tmp_path / "escape.txt").exists()
@@ -594,11 +505,11 @@ def test_unsafe_late_zip_member_leaves_no_destination(tmp_path, name):
 )
 def test_duplicate_and_prefix_collisions_are_rejected(tmp_path, paths):
     with pytest.warns(UserWarning) if paths[0] == paths[1] else nullcontext():
-        manifest, parts, _ = release(
+        _item, archive, _ = release(
             tmp_path, [(f"{download.DATA_ROOT}/{name}", b"content") for name in paths]
         )
     with pytest.raises(ValueError, match="Duplicate|collisi|collid"):
-        download.install(manifest, tmp_path / "installed", tmp_path / "cache", parts)
+        download.extract(archive, tmp_path / "installed")
 
 
 @pytest.mark.parametrize(
@@ -613,9 +524,9 @@ def test_zip_symlink_is_rejected(tmp_path, name):
     link = zipfile.ZipInfo(name)
     link.create_system = 3
     link.external_attr = (stat.S_IFLNK | 0o777) << 16
-    manifest, parts, _ = release(tmp_path, [(link, b"../../outside")])
+    _item, archive, _ = release(tmp_path, [(link, b"../../outside")])
     with pytest.raises(ValueError, match="links"):
-        download.install(manifest, tmp_path / "installed", tmp_path / "cache", parts)
+        download.extract(archive, tmp_path / "installed")
 
 
 @pytest.mark.parametrize("symlink", [False, True])
@@ -638,65 +549,21 @@ def test_existing_destination_is_preserved_before_network(tmp_path, monkeypatch,
 
 
 def test_cache_symlink_is_preserved(tmp_path):
-    manifest, parts, _ = release(tmp_path)
+    _item, _archive, _ = release(tmp_path)
     target = tmp_path / "user.txt"
     target.write_text("preserve")
     cache = tmp_path / "cache"
     cache.mkdir()
     (cache / download.ARCHIVE_NAME).symlink_to(target)
     with pytest.raises(ValueError, match="link"):
-        download.install(manifest, tmp_path / "data", cache, parts)
+        download.install_release(tmp_path / "data", cache)
     assert target.read_text() == "preserve"
     assert (cache / download.ARCHIVE_NAME).is_symlink()
 
 
-def test_manifest_is_pinned_and_arbitrary_remote_urls_are_rejected(tmp_path, monkeypatch):
-    manifest, parts, _ = release(tmp_path)
-    path = parts / download.MANIFEST_NAME
-    with pytest.raises(ValueError, match="Manifest checksum"):
-        download.load_manifest(str(path))
-    monkeypatch.setattr(download, "request", lambda _: pytest.fail("No arbitrary remote request"))
-    with pytest.raises(ValueError, match="pinned Zenodo"):
-        download.load_manifest("https://example.org/manifest.json")
-    monkeypatch.setattr(download, "MANIFEST_SHA256", digest(path.read_bytes()))
-    with pytest.raises(ValueError, match="pinned legacy DATA release archive"):
-        download.load_manifest(str(path))
-    monkeypatch.setattr(download, "LEGACY_ARCHIVE_BYTES", manifest["archive"]["bytes"])
-    monkeypatch.setattr(download, "LEGACY_ARCHIVE_SHA256", manifest["archive"]["sha256"])
-    assert download.ARCHIVE_SHA256 != manifest["archive"]["sha256"]
-    assert download.load_manifest(str(path)) == manifest
-
-
-def test_offline_cli_uses_manifest_beside_parts(tmp_path, monkeypatch):
-    manifest, parts, _ = release(tmp_path)
-    monkeypatch.setattr(
-        download, "MANIFEST_SHA256", digest((parts / download.MANIFEST_NAME).read_bytes())
-    )
-    monkeypatch.setattr(download, "LEGACY_ARCHIVE_BYTES", manifest["archive"]["bytes"])
-    monkeypatch.setattr(download, "LEGACY_ARCHIVE_SHA256", manifest["archive"]["sha256"])
-    monkeypatch.setattr(
-        download, "request", lambda _: pytest.fail("Offline installation used network")
-    )
-    destination = tmp_path / "data"
-    assert (
-        download.main(
-            [
-                "--parts-dir",
-                str(parts),
-                "--destination",
-                str(destination),
-                "--cache-dir",
-                str(tmp_path / "cache"),
-            ]
-        )
-        == 0
-    )
-    assert (destination / "README.md").exists()
-
-
 def test_finder_metadata_is_validated_but_not_extracted(tmp_path):
     root = download.DATA_ROOT
-    manifest, parts, _ = release(
+    _item, archive, _ = release(
         tmp_path,
         [
             (f"{root}/", b""),
@@ -713,8 +580,7 @@ def test_finder_metadata_is_validated_but_not_extracted(tmp_path):
         ],
     )
     destination = tmp_path / "installed"
-    result = download.install(manifest, destination, tmp_path / "cache", parts)
-    assert result["files"] == 2
+    assert download.extract(archive, destination) == 2
     assert sorted(str(p.relative_to(destination)) for p in destination.rglob("*")) == [
         "README.md", "processed_csv", "processed_csv/example.csv"
     ]
@@ -735,19 +601,19 @@ def test_finder_metadata_is_validated_but_not_extracted(tmp_path):
     ],
 )
 def test_unsafe_or_unmatched_finder_metadata_leaves_no_destination(tmp_path, name):
-    manifest, parts, _ = release(
+    _item, archive, _ = release(
         tmp_path, [(f"{download.DATA_ROOT}/README.md", b"valid"), (name, b"invalid")]
     )
     destination = tmp_path / "installed"
     with pytest.raises(ValueError, match="ZIP|metadata"):
-        download.install(manifest, destination, tmp_path / "cache", parts)
+        download.extract(archive, destination)
     assert not destination.exists()
     assert not list(tmp_path.glob("data-extract-*"))
 
 
 def test_finder_metadata_case_collision_is_rejected(tmp_path):
     root = download.DATA_ROOT
-    manifest, parts, _ = release(
+    _item, archive, _ = release(
         tmp_path,
         [
             (f"{root}/folder/a", b"a"),
@@ -757,4 +623,4 @@ def test_finder_metadata_case_collision_is_rejected(tmp_path):
         ],
     )
     with pytest.raises(ValueError, match="Case-colliding"):
-        download.install(manifest, tmp_path / "installed", tmp_path / "cache", parts)
+        download.extract(archive, tmp_path / "installed")

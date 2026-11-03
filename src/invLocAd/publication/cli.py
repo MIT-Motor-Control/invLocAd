@@ -1,4 +1,4 @@
-"""The ``loco-publication`` commands for preparing inputs and reproducing figures."""
+"""The ``invLocAd-publication`` commands for preparing inputs and reproducing figures."""
 
 from __future__ import annotations
 
@@ -22,12 +22,12 @@ MAIN_FIGURES = {"figure1", "figure3", "figure4", "s3"}
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Return the ``loco-publication`` argument parser."""
+    """Return the ``invLocAd-publication`` argument parser."""
     parser = argparse.ArgumentParser(description="Reproduce the figures and numerical tables of the paper.")
     commands = parser.add_subparsers(dest="command", required=True)
     prepare = commands.add_parser("prepare", help="Prepare the downloaded Zenodo data for analysis.")
     source = prepare.add_mutually_exclusive_group()
-    source.add_argument("--source", type=Path, help="Experimental data folder (default: data/locomotor_learning_model-DATA).")
+    source.add_argument("--source", type=Path, help="Experimental data folder (default: data/invLocAd-DATA).")
     source.add_argument("--bundle", type=Path, help="Maintainers: build the dataset from the original author files instead.")
     prepare.add_argument("--model-inputs", type=Path, help="publication-data.zip to install (default: found in the source folder or data/).")
     prepare.add_argument("--fall-archive", type=Path, help="Maintainers: folder of additional fall-probability MAT files.")
@@ -81,7 +81,7 @@ def require_integrity(data_root: Path) -> dict:
     if not (data_root / "manifest.json").is_file():
         raise ValueError(
             f"Prepared data not found in {data_root}. Place the downloaded "
-            "locomotor_learning_model-DATA folder inside data/, then run loco-publication prepare. "
+            "invLocAd-DATA folder inside data/, then run invLocAd-publication prepare. "
             "See data/README.md for the companion model inputs."
         )
     integrity = verify_data(data_root)
@@ -207,7 +207,7 @@ def package_data(data_root: Path, destination: Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run one ``loco-publication`` command.
+    """Run one ``invLocAd-publication`` command.
 
     Args:
         argv: Command-line arguments; ``None`` reads ``sys.argv``.
@@ -231,7 +231,7 @@ def main(argv: list[str] | None = None) -> int:
                     raise ValueError("--fall-archive and --private-archive require the maintainer --bundle option.")
                 from .zenodo import prepare_zenodo_data
 
-                source = args.source or Path("data/locomotor_learning_model-DATA")
+                source = args.source or Path("data/invLocAd-DATA")
                 archive = args.model_inputs if args.model_inputs is not None else _companion_archive(source)
                 if archive is not None:
                     from .archive import install_publication_archive

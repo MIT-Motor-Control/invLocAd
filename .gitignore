@@ -10,7 +10,7 @@ build/
 .pytest_cache/
 .ruff_cache/
 data/publication/
-data/locomotor_learning_model-DATA/
+data/invLocAd-DATA/
 data/*.zip
 
 # Scientific datasets and saved model state are distributed through Zenodo.

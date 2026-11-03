@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.learning.f_objective_asymmetric_nominal import (
+from invLocAd.learning.f_objective_asymmetric_nominal import (
     f_objective_asymmetric_nominal,
 )
 

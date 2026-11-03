@@ -2,22 +2,22 @@
 
 import pytest
 
-from locomotor_learning_model.parameter_loading.load_biped_model_parameters import (
+from invLocAd.parameter_loading.load_biped_model_parameters import (
     load_biped_model_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_controller_gain_parameters import (
+from invLocAd.parameter_loading.load_controller_gain_parameters import (
     load_controller_gain_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_learner_parameters import (
+from invLocAd.parameter_loading.load_learner_parameters import (
     load_learner_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_protocol_parameters import (
+from invLocAd.parameter_loading.load_protocol_parameters import (
     load_protocol_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_sensory_noise_parameters import (
+from invLocAd.parameter_loading.load_sensory_noise_parameters import (
     load_sensory_noise_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_stored_memory_parameters_control_vs_speed import (
+from invLocAd.parameter_loading.load_stored_memory_parameters_control_vs_speed import (
     load_stored_memory_parameters_control_vs_speed,
 )
 

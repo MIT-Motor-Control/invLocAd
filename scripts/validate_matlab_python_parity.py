@@ -16,37 +16,37 @@ from scipy.io import loadmat
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from locomotor_learning_model.initializing.get_treadmill_speed import (
+from invLocAd.initializing.get_treadmill_speed import (
     get_treadmill_speed,
 )
-from locomotor_learning_model.initializing.load_initial_body_state import (
+from invLocAd.initializing.load_initial_body_state import (
     load_initial_body_state,
 )
-from locomotor_learning_model.initializing.load_learnable_parameters_initial import (
+from invLocAd.initializing.load_learnable_parameters_initial import (
     load_learnable_parameters_initial,
 )
-from locomotor_learning_model.learning.f_objective_asymmetric_nominal import (
+from invLocAd.learning.f_objective_asymmetric_nominal import (
     f_objective_asymmetric_nominal,
 )
-from locomotor_learning_model.learning.simulate_learning_step_by_step import (
+from invLocAd.learning.simulate_learning_step_by_step import (
     simulate_learning_step_by_step,
 )
-from locomotor_learning_model.parameter_loading.load_biped_model_parameters import (
+from invLocAd.parameter_loading.load_biped_model_parameters import (
     load_biped_model_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_controller_gain_parameters import (
+from invLocAd.parameter_loading.load_controller_gain_parameters import (
     load_controller_gain_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_learner_parameters import (
+from invLocAd.parameter_loading.load_learner_parameters import (
     load_learner_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_protocol_parameters import (
+from invLocAd.parameter_loading.load_protocol_parameters import (
     load_protocol_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_sensory_noise_parameters import (
+from invLocAd.parameter_loading.load_sensory_noise_parameters import (
     load_sensory_noise_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_stored_memory_parameters_control_vs_speed import (
+from invLocAd.parameter_loading.load_stored_memory_parameters_control_vs_speed import (
     load_stored_memory_parameters_control_vs_speed,
 )
 

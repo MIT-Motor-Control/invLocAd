@@ -5,15 +5,15 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from locomotor_learning_model.initializing.get_treadmill_speed import get_treadmill_speed
-from locomotor_learning_model.initializing.load_initial_body_state import load_initial_body_state
-from locomotor_learning_model.initializing.load_learnable_parameters_initial import (
+from invLocAd.initializing.get_treadmill_speed import get_treadmill_speed
+from invLocAd.initializing.load_initial_body_state import load_initial_body_state
+from invLocAd.initializing.load_learnable_parameters_initial import (
     load_learnable_parameters_initial,
 )
-from locomotor_learning_model.learning.f_objective_asymmetric_nominal import (
+from invLocAd.learning.f_objective_asymmetric_nominal import (
     f_objective_asymmetric_nominal,
 )
-from locomotor_learning_model.learning.simulate_learning_step_by_step import (
+from invLocAd.learning.simulate_learning_step_by_step import (
     simulate_learning_step_by_step,
 )
 

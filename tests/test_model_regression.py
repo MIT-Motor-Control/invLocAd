@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 
-from locomotor_learning_model import run_simulation
+from invLocAd import run_simulation
 
 # Seed 42 with the default split and tied protocols; the 40-iteration split run is the
-# ``loco-simulate demo`` configuration. The internal models are first fitted after 30
+# ``invLocAd-simulate demo`` configuration. The internal models are first fitted after 30
 # iterations, so only that run covers the estimator fits and gradient steps. The pinned values
 # agree to better than 1e-13 between OpenBLAS and Accelerate builds of NumPy and SciPy. The
 # final midstance angle, the memory slopes and the step asymmetries are near zero or

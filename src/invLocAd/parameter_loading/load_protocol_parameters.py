@@ -3,10 +3,10 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.parameter_loading.make_treadmill_speed_split import (
+from invLocAd.parameter_loading.make_treadmill_speed_split import (
     make_treadmill_speed_split,
 )
-from locomotor_learning_model.parameter_loading.make_treadmill_speed_tied import (
+from invLocAd.parameter_loading.make_treadmill_speed_tied import (
     make_treadmill_speed_tied,
 )
 

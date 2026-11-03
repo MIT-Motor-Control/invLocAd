@@ -9,7 +9,7 @@ from zipfile import ZipFile, ZipInfo
 
 import pytest
 
-from locomotor_learning_model.publication import archive as installer
+from invLocAd.publication import archive as installer
 
 
 def write_dataset(root, files, kind=None):

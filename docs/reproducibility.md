@@ -1,16 +1,16 @@
 # Reproduction guide
 
-`loco-publication` recomputes the paper's numerical figures, tables and statistics from the saved experimental measurements and simulations in the Zenodo DATA archive. It does not rerun the stochastic simulation sweeps, so its results are those of the saved simulations. The [README](../README.md#reproduce-the-paper) lists the commands and maps each figure to its analysis.
+`invLocAd-publication` recomputes the paper's numerical figures, tables and statistics from the saved experimental measurements and simulations in the Zenodo DATA archive. It does not rerun the stochastic simulation sweeps, so its results are those of the saved simulations. The [README](../README.md#reproduce-the-paper) lists the commands and maps each figure to its analysis.
 
 ## Commands
 
 | Command | Purpose |
 |---|---|
-| `loco-publication prepare` | Check the DATA folder and write the analysis inputs to `data/publication/` |
-| `loco-publication verify-data` | Recheck every prepared input against its SHA-256 checksum |
-| `loco-publication reproduce --strict` | Write figures, CSV tables and a report to `outputs/publication/` |
-| `loco-publication validate-manuscript` | Compare the reproduced tables with the values reported in the paper |
-| `loco-publication recompute-s1 --matlab /path/to/matlab` | Rerun the Supplementary Figure 1 cross-validation in MATLAB |
+| `invLocAd-publication prepare` | Check the DATA folder and write the analysis inputs to `data/publication/` |
+| `invLocAd-publication verify-data` | Recheck every prepared input against its SHA-256 checksum |
+| `invLocAd-publication reproduce --strict` | Write figures, CSV tables and a report to `outputs/publication/` |
+| `invLocAd-publication validate-manuscript` | Compare the reproduced tables with the values reported in the paper |
+| `invLocAd-publication recompute-s1 --matlab /path/to/matlab` | Rerun the Supplementary Figure 1 cross-validation in MATLAB |
 
 `reproduce` exits with 1 on an input, output-folder or analysis error and, with `--strict`, with 2 if an analysis is partial or blocked by missing inputs; otherwise it exits with 0. Options: `--figures` selects analyses, `--output` sets the directory and `--overwrite` replaces an earlier run in it. `report.json` records the checksums of the input manifest, code and outputs and the software versions; `report.md` lists the status and caveats of each analysis.
 
@@ -18,10 +18,10 @@
 
 `recompute-s1` requires MATLAB with the Statistics and Machine Learning Toolbox; `reproduce` plots the saved results of the same MATLAB analysis.
 
-MATLAB versions of the Supplementary Figure 2 and 4 analyses are in the same folder as the Supplementary Figure 1 scripts, `src/locomotor_learning_model/publication/vendor/`. They also need the Statistics and Machine Learning Toolbox, read the prepared inputs and write the same CSV tables as `reproduce`, with PNG figures:
+MATLAB versions of the Supplementary Figure 2 and 4 analyses are in the same folder as the Supplementary Figure 1 scripts, `src/invLocAd/publication/vendor/`. They also need the Statistics and Machine Learning Toolbox, read the prepared inputs and write the same CSV tables as `reproduce`, with PNG figures:
 
 ```matlab
-addpath('src/locomotor_learning_model/publication/vendor')
+addpath('src/invLocAd/publication/vendor')
 publication_s2_asymmetry('data/publication', 'outputs/matlab/s2')
 publication_s4_fall_penalty('data/publication', 'outputs/matlab/s4')
 ```

@@ -9,9 +9,9 @@ import numpy as np
 import pytest
 from scipy.io import loadmat, savemat
 
-from locomotor_learning_model.publication.main_figures import figure1_tables
-from locomotor_learning_model.publication.reporting import verify_data
-from locomotor_learning_model.publication.zenodo import (
+from invLocAd.publication.main_figures import figure1_tables
+from invLocAd.publication.reporting import verify_data
+from invLocAd.publication.zenodo import (
     COHORTS,
     CONDITION_IDS,
     CONDITIONS,
@@ -188,7 +188,7 @@ def test_existing_destination_conflicts_are_not_replaced(public_data, tmp_path):
 
 @pytest.mark.integration
 def test_audited_public_csv_reproduces_experimental_values_with_rounding_tolerance(tmp_path):
-    source = Path(__file__).resolve().parents[1] / "data/locomotor_learning_model-DATA"
+    source = Path(__file__).resolve().parents[1] / "data/invLocAd-DATA"
     if not (source / "processed_csv").is_dir():
         pytest.skip("The public experimental DATA folder is unavailable")
     destination = tmp_path / "prepared"

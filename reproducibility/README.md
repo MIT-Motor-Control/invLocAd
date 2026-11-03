@@ -5,12 +5,12 @@ Checks of this release on macOS 26.6 (arm64) with Python 3.12.13, the pinned pac
 | Check | Result |
 |---|---|
 | Fresh Conda environment from `environment.yml` | Created in under a minute; `pip check` passed |
-| `loco-simulate demo`, pause and resume (README) | Completed; the resumed run equals the uninterrupted run |
+| `invLocAd-simulate demo`, pause and resume (README) | Completed; the resumed run equals the uninterrupted run |
 | `python scripts/download_data.py --archive ...` | Size and SHA-256 verified; 105 files installed |
-| `loco-publication prepare` and `verify-data` | 5,166 inputs verified |
-| `loco-publication reproduce --strict` | All 9 analyses passed; 45 figure files and 62 tables |
-| `loco-publication validate-manuscript` | 27 of 27 values match the paper |
-| `python -m pytest` with MATLAB | 315 passed |
+| `invLocAd-publication prepare` and `verify-data` | 5,166 inputs verified |
+| `invLocAd-publication reproduce --strict` | All 9 analyses passed; 45 figure files and 62 tables |
+| `invLocAd-publication validate-manuscript` | 27 of 27 values match the paper |
+| `python -m pytest` with MATLAB | 308 passed |
 | Manuscript engine regenerates `checkpoints/manuscript_seed42_trial.mat` | Identical |
 | `validate_manuscript_model` (MATLAB) | Passed |
 | Python and MATLAB baseline, noise-free | Initial-controller objective within 5.8 × 10⁻¹²; controller history over 40 iterations within 5.1 × 10⁻¹⁶ |
@@ -24,8 +24,8 @@ Repeated runs in one environment give identical tables, except the double-expone
 
 ## DATA archive
 
-`locomotor_learning_model-DATA.zip`: 13,269,920,505 bytes, SHA-256
+`invLocAd-DATA.zip`: 13,269,858,121 bytes, SHA-256
 
 ```text
-0c9bef014af484a419746141cd887eb0d1e66020cad4f593897cb7646eff26aa
+16ce92fd0fac4fc5a3686e4bcd0180f80f5bd84a0ec928e95e8de4826cdb7ffd
 ```

@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.learning.fall_margin_penalty import (
+from invLocAd.learning.fall_margin_penalty import (
     compute_fall_margin_penalty,
     compute_trial_min_com_height,
 )
-from locomotor_learning_model.learning.simulate_many_steps_asymmetric_control import (
+from invLocAd.learning.simulate_many_steps_asymmetric_control import (
     simulate_many_steps_asymmetric_control,
 )
 

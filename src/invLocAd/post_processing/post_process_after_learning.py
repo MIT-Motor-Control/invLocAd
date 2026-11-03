@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.learning.simulate_many_steps_asymmetric_control import (
+from invLocAd.learning.simulate_many_steps_asymmetric_control import (
     simulate_many_steps_asymmetric_control,
 )
 

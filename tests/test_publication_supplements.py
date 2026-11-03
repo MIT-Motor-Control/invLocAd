@@ -8,15 +8,15 @@ import numpy as np
 import pytest
 from scipy.io import savemat
 
-from locomotor_learning_model.publication.fall_penalty_analysis import fit_energy_exponential
-from locomotor_learning_model.publication.regenerated import (
+from invLocAd.publication.fall_penalty_analysis import fit_energy_exponential
+from invLocAd.publication.regenerated import (
     FIGURE2C_ROLLOUTS,
     TRIAL_AVERAGE_GRID,
     figure2c_model_tables,
     grid_finite_counts,
     normalize_raw_trajectory,
 )
-from locomotor_learning_model.publication.supplements import (
+from invLocAd.publication.supplements import (
     ENERGY,
     compare_exponential_timescales,
     fall_penalty_energy_percent,
@@ -193,7 +193,7 @@ def test_figure2c_recomputes_experimental_values_but_never_claims_missing_model(
 
 
 def test_figure2_merges_parts_with_least_complete_status(tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import supplements
+    from invLocAd.publication import supplements
 
     def part(name, status):
         """Return a stand-in renderer whose record is labeled ``name``."""
@@ -220,7 +220,7 @@ def test_figure2_merges_parts_with_least_complete_status(tmp_path, monkeypatch):
 
 
 def test_figure2_part_error_does_not_suppress_other_part(tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import supplements
+    from invLocAd.publication import supplements
 
     def broken(root, output):
         """Raise an analysis error in place of Figure 2B."""
@@ -250,7 +250,7 @@ def publication_data():
     """Return the prepared publication data folder, or skip without the full dataset."""
     root = Path(__file__).resolve().parents[1] / "data/publication"
     if not (root / "manifest.json").is_file():
-        pytest.skip("Run loco-publication prepare to enable prepared-data regressions")
+        pytest.skip("Run invLocAd-publication prepare to enable prepared-data regressions")
     if json.loads((root / "manifest.json").read_text()).get("dataset_kind") == "zenodo_experimental":
         pytest.skip("Model reference regressions require the companion publication-data.zip")
     return root

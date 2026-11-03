@@ -13,41 +13,41 @@ from typing import Any
 import numpy as np
 import scipy
 
-from locomotor_learning_model.initializing.get_treadmill_speed import (
+from invLocAd.initializing.get_treadmill_speed import (
     get_treadmill_speed,
 )
-from locomotor_learning_model.initializing.load_initial_body_state import (
+from invLocAd.initializing.load_initial_body_state import (
     load_initial_body_state,
 )
-from locomotor_learning_model.initializing.load_learnable_parameters_initial import (
+from invLocAd.initializing.load_learnable_parameters_initial import (
     load_learnable_parameters_initial,
 )
-from locomotor_learning_model.learning.simulate_learning_step_by_step import (
+from invLocAd.learning.simulate_learning_step_by_step import (
     simulate_learning_step_by_step,
     validate_learning_state,
 )
-from locomotor_learning_model.parameter_loading.load_biped_model_parameters import (
+from invLocAd.parameter_loading.load_biped_model_parameters import (
     load_biped_model_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_controller_gain_parameters import (
+from invLocAd.parameter_loading.load_controller_gain_parameters import (
     load_controller_gain_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_learner_parameters import (
+from invLocAd.parameter_loading.load_learner_parameters import (
     load_learner_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_protocol_parameters import (
+from invLocAd.parameter_loading.load_protocol_parameters import (
     load_protocol_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_sensory_noise_parameters import (
+from invLocAd.parameter_loading.load_sensory_noise_parameters import (
     load_sensory_noise_parameters,
 )
-from locomotor_learning_model.parameter_loading.load_stored_memory_parameters_control_vs_speed import (
+from invLocAd.parameter_loading.load_stored_memory_parameters_control_vs_speed import (
     load_stored_memory_parameters_control_vs_speed,
 )
-from locomotor_learning_model.post_processing.post_process_after_learning import (
+from invLocAd.post_processing.post_process_after_learning import (
     post_process_after_learning,
 )
-from locomotor_learning_model.post_processing.post_process_helper_plots import (
+from invLocAd.post_processing.post_process_helper_plots import (
     post_process_helper_plots,
 )
 

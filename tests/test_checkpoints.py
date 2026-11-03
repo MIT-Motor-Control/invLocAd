@@ -8,14 +8,14 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from locomotor_learning_model import (
+from invLocAd import (
     load_simulation_results,
     plot_simulation_results,
     run_simulation,
 )
-from locomotor_learning_model.artifacts import load_archive, save_archive
-from locomotor_learning_model.cli import main
-from locomotor_learning_model.parameter_loading.load_protocol_parameters import (
+from invLocAd.artifacts import load_archive, save_archive
+from invLocAd.cli import main
+from invLocAd.parameter_loading.load_protocol_parameters import (
     load_protocol_parameters,
 )
 

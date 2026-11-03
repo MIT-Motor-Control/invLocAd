@@ -3,9 +3,9 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "locomotor-learning-model"
-version = "0.3.0"
-description = "Locomotor adaptation simulations and reproducible manuscript analyses"
+name = "invLocAd"
+version = "0.4.0"
+description = "invLocAd simulations and reproducible locomotor adaptation analyses"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -22,14 +22,14 @@ dev = ["pytest>=8,<10", "ruff>=0.11"]
 excel = ["openpyxl>=3.1,<4"]
 
 [project.scripts]
-loco-simulate = "locomotor_learning_model.cli:main"
-loco-publication = "locomotor_learning_model.publication.cli:main"
+invLocAd-simulate = "invLocAd.cli:main"
+invLocAd-publication = "invLocAd.publication.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"locomotor_learning_model.publication" = ["*.m", "vendor/*.m"]
+"invLocAd.publication" = ["*.m", "vendor/*.m"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -39,4 +39,7 @@ markers = ["integration: requires the prepared publication data or MATLAB"]
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+
+[tool.ruff.lint.per-file-ignores]
+"src/invLocAd/**" = ["N999"]
 

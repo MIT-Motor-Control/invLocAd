@@ -6,8 +6,8 @@ from zipfile import ZipFile
 
 import pytest
 
-from locomotor_learning_model.publication.cli import main, package_data
-from locomotor_learning_model.publication.reporting import sha256, verify_data
+from invLocAd.publication.cli import main, package_data
+from invLocAd.publication.reporting import sha256, verify_data
 
 
 def prepared(tmp_path):
@@ -63,7 +63,7 @@ def test_package_rejects_nested_destination(tmp_path):
 
 
 def test_reproduce_reports_partial_and_strict_exit(tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import main_figures
+    from invLocAd.publication import main_figures
 
     root = prepared(tmp_path)
     monkeypatch.setattr(main_figures, "render_main", lambda *_: [{"id": "figure1", "status": "partial", "caveats": ["Missing comparison data"], "outputs": []}])
@@ -76,7 +76,7 @@ def test_reproduce_reports_partial_and_strict_exit(tmp_path, monkeypatch):
 
 
 def test_failed_figure_has_log_and_nonzero_exit(tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import main_figures
+    from invLocAd.publication import main_figures
 
     root = prepared(tmp_path)
 
@@ -118,18 +118,18 @@ def test_missing_model_inputs_are_blocked_not_execution_failures(tmp_path):
 def test_fresh_clone_data_error_has_setup_instructions(tmp_path, capsys):
     assert main(["verify-data", "--data", str(tmp_path / "missing")]) == 1
     message = capsys.readouterr().err
-    assert "loco-publication prepare" in message
-    assert "locomotor_learning_model-DATA" in message
+    assert "invLocAd-publication prepare" in message
+    assert "invLocAd-DATA" in message
 
 
 @pytest.mark.parametrize("source_option", [None, "download/DATA", "download"])
 def test_prepare_discovers_embedded_archive_from_relative_default_and_wrapper_sources(
     tmp_path, monkeypatch, source_option
 ):
-    from locomotor_learning_model.publication import archive as installer
+    from invLocAd.publication import archive as installer
 
     monkeypatch.chdir(tmp_path)
-    dataset = Path("data/locomotor_learning_model-DATA" if source_option is None else "download/DATA")
+    dataset = Path("data/invLocAd-DATA" if source_option is None else "download/DATA")
     (dataset / "processed_csv").mkdir(parents=True)
     companion = dataset / "publication-data.zip"
     companion.write_bytes(b"embedded archive")
@@ -151,7 +151,7 @@ def test_prepare_discovers_embedded_archive_from_relative_default_and_wrapper_so
 
 @pytest.mark.parametrize("mode", ["wrapper", "data_folder", "explicit"])
 def test_prepare_preserves_external_archive_choices(tmp_path, monkeypatch, mode):
-    from locomotor_learning_model.publication import archive as installer
+    from invLocAd.publication import archive as installer
 
     monkeypatch.chdir(tmp_path)
     (Path("download/DATA") / "processed_csv").mkdir(parents=True)
@@ -177,10 +177,10 @@ def test_prepare_preserves_external_archive_choices(tmp_path, monkeypatch, mode)
 
 
 def test_prepare_without_companion_keeps_experimental_import(tmp_path, monkeypatch):
-    from locomotor_learning_model.publication import zenodo
+    from invLocAd.publication import zenodo
 
     monkeypatch.chdir(tmp_path)
-    source = Path("data/locomotor_learning_model-DATA")
+    source = Path("data/invLocAd-DATA")
     (source / "processed_csv").mkdir(parents=True)
     calls = []
 

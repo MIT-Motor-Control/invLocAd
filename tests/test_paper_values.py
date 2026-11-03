@@ -11,18 +11,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from locomotor_learning_model.publication import cli, manuscript
+from invLocAd.publication import cli, manuscript
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLICATION_DATA = ROOT / "data/publication"
-DATA = ROOT / "data/locomotor_learning_model-DATA"
+DATA = ROOT / "data/invLocAd-DATA"
 
 
 @pytest.fixture(scope="module")
 def reproduction(tmp_path_factory):
     manifest = PUBLICATION_DATA / "manifest.json"
     if not manifest.is_file():
-        pytest.skip("Run loco-publication prepare to check values against the paper")
+        pytest.skip("Run invLocAd-publication prepare to check values against the paper")
     if json.loads(manifest.read_text()).get("dataset_kind") == "zenodo_experimental":
         pytest.skip("Model results require the companion publication-data.zip")
     output = tmp_path_factory.mktemp("paper") / "publication"
@@ -148,7 +148,7 @@ def _same_table(first, second, tolerance):
 @pytest.mark.integration
 def test_matlab_supplementary_figure_scripts_match_python(reproduction, tmp_path):
     matlab = _matlab()
-    vendor = ROOT / "src/locomotor_learning_model/publication/vendor"
+    vendor = ROOT / "src/invLocAd/publication/vendor"
     script = (
         f"addpath('{vendor}'); "
         f"publication_s2_asymmetry('{PUBLICATION_DATA}', '{tmp_path / 's2'}'); "

@@ -25,7 +25,7 @@ def utc_now() -> str:
 def environment() -> dict:
     """Return the Python version, platform and installed versions of key packages."""
     versions = {}
-    for name in ("locomotor-learning-model", "numpy", "scipy", "matplotlib", "pandas"):
+    for name in ("invLocAd", "numpy", "scipy", "matplotlib", "pandas"):
         try:
             versions[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:

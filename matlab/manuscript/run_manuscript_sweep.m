@@ -23,14 +23,14 @@ validateattributes(options.energy_weights, {'double'}, {'nonempty','finite','>='
 [d, a, w, t] = ndgrid(options.speed_differences, options.learning_rates, options.energy_weights, 1:options.trials);
 jobs = [d(:), a(:), w(:), t(:)];
 if options.seed + size(jobs,1) - 1 > 2^32 - 1
-    error('LocAd:InvalidConfiguration', 'The sweep seeds exceed uint32.');
+    error('invLocAd:InvalidConfiguration', 'The sweep seeds exceed uint32.');
 end
 if ~isfolder(output_dir); mkdir(output_dir); end
 manifest_file = fullfile(output_dir, 'sweep.mat');
 if isfile(manifest_file)
     previous = load(manifest_file, 'options', 'jobs');
     if ~isequaln(previous.options, options) || ~isequal(previous.jobs, jobs)
-        error('LocAd:SweepMismatch', 'Existing sweep has a different grid or seed. Choose a new directory.');
+        error('invLocAd:SweepMismatch', 'Existing sweep has a different grid or seed. Choose a new directory.');
     end
 else
     save(manifest_file, 'options', 'jobs');

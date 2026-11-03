@@ -3,17 +3,17 @@
 import numpy as np
 import pytest
 
-from locomotor_learning_model.initializing.load_initial_body_state import load_initial_body_state
-from locomotor_learning_model.initializing.load_learnable_parameters_initial import (
+from invLocAd.initializing.load_initial_body_state import load_initial_body_state
+from invLocAd.initializing.load_learnable_parameters_initial import (
     load_learnable_parameters_initial,
 )
-from locomotor_learning_model.learning.detect_endstance import detect_endstance
-from locomotor_learning_model.learning.detect_midstance import detect_midstance
-from locomotor_learning_model.learning.f_objective_asymmetric_nominal import (
+from invLocAd.learning.detect_endstance import detect_endstance
+from invLocAd.learning.detect_midstance import detect_midstance
+from invLocAd.learning.f_objective_asymmetric_nominal import (
     f_objective_asymmetric_nominal,
 )
-from locomotor_learning_model.learning.single_pendulum_ode import single_pendulum_ode
-from locomotor_learning_model.learning.swing_cost_doke import swing_cost_doke
+from invLocAd.learning.single_pendulum_ode import single_pendulum_ode
+from invLocAd.learning.swing_cost_doke import swing_cost_doke
 
 
 @pytest.mark.parametrize(

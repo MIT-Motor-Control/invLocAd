@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 from scipy.io import loadmat, savemat
 
-from locomotor_learning_model.publication.data import integrate_addendum
-from locomotor_learning_model.publication.reporting import sha256, verify_data
+from invLocAd.publication.data import integrate_addendum
+from invLocAd.publication.reporting import sha256, verify_data
 
 ENERGY = "original/data/cosmed/processed/processedEnergyData.mat"
 

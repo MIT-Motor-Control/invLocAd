@@ -15,7 +15,7 @@ Omit `max_iterations` for the full protocol: 1 minute of tied-belt walking, then
 
 `energy_weight` (default 0.5) weights the energy term of the objective; the manuscript symmetry weight is ψ = 1 − energy_weight. `transition_seconds` (default 25) and `speed_divisor` (default 2) set the ramp duration and the scaling from experimental to model belt speeds.
 
-Each saved trial stores its options, MATLAB version, engine source text and final random number generator state. Calling `run_manuscript_trial` with an existing file reloads it only when the options and the engine source text, including comments, match; otherwise it raises `LocAd:CheckpointMismatch`. The engine source text stored in the DATA file `checkpoints/manuscript_seed42_trial.mat` differs from `engine/`, so read that file with `load`; a new run with `seed=42` and otherwise default options reproduces its numerical results in MATLAB R2025a. The simulations reported in the paper were not seeded, so no seeded run reproduces a particular trial from the paper.
+Each saved trial stores its options, MATLAB version, engine source text and final random number generator state. Calling `run_manuscript_trial` with an existing file reloads it only when the options and the engine source text, including comments, match; otherwise it raises `invLocAd:CheckpointMismatch`. The engine source text stored in the DATA file `checkpoints/manuscript_seed42_trial.mat` differs from `engine/`, so read that file with `load`; a new run with `seed=42` and otherwise default options reproduces its numerical results in MATLAB R2025a. The simulations reported in the paper were not seeded, so no seeded run reproduces a particular trial from the paper.
 
 ## Run a sweep
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.learning.error_from_memory_compute import error_from_memory_compute
+from invLocAd.learning.error_from_memory_compute import error_from_memory_compute
 
 
 def gradient_of_error_from_memory_compute(

@@ -5,8 +5,8 @@ import json
 
 import pytest
 
-from locomotor_learning_model.publication import manuscript
-from locomotor_learning_model.publication.reporting import sha256, verify_data, write_report
+from invLocAd.publication import manuscript
+from invLocAd.publication.reporting import sha256, verify_data, write_report
 
 
 def reproduction(tmp_path):

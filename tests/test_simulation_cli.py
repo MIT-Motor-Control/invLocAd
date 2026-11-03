@@ -5,8 +5,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from locomotor_learning_model import cli, load_simulation_results, run_simulation
-from locomotor_learning_model.artifacts import load_archive
+from invLocAd import cli, load_simulation_results, run_simulation
+from invLocAd.artifacts import load_archive
 
 
 def test_demo_saves_reusable_results_without_interactive_windows(tmp_path, monkeypatch, capsys):
@@ -120,8 +120,8 @@ def test_options_without_command_save_nothing_by_default(simulation_calls):
 def test_bare_command_shows_help_without_starting_a_simulation(simulation_calls, capsys):
     assert cli.main([]) == 0
     help_text = capsys.readouterr().out
-    assert "loco-simulate demo" in help_text
-    assert "loco-simulate resume" in help_text
+    assert "invLocAd-simulate demo" in help_text
+    assert "invLocAd-simulate resume" in help_text
     assert not simulation_calls
 
 

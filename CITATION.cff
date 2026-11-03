@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "Please cite the accompanying Kang, Mitra and Seethapathi paper and the Zenodo version used in your work."
-title: "Code and data for: Safety prioritization shapes locomotor adaptation and performance"
+title: "invLocAd: Code and data for Safety prioritization shapes locomotor adaptation and performance"
 type: software
 authors:
   - family-names: Kang
@@ -9,11 +9,11 @@ authors:
     given-names: Kanishka
   - family-names: Seethapathi
     given-names: Nidhi
-version: 0.3.0
-date-released: 2026-10-15
-repository-code: "https://github.com/MIT-Motor-Control/locomotor_learning_model"
-doi: 10.5281/zenodo.23402153
-url: "https://doi.org/10.5281/zenodo.23402153"
+version: 0.4.0
+date-released: 2026-11-02
+repository-code: "https://github.com/MIT-Motor-Control/invLocAd"
+doi: 10.5281/zenodo.23904047
+url: "https://doi.org/10.5281/zenodo.23904047"
 license: MIT
 preferred-citation:
   type: article

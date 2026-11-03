@@ -128,14 +128,14 @@ def _add_options(parser: argparse.ArgumentParser, command: str | None = None) ->
 def build_parser() -> argparse.ArgumentParser:
     """Return the argument parser for the demo, run and resume commands."""
     parser = argparse.ArgumentParser(
-        prog="loco-simulate",
+        prog="invLocAd-simulate",
         description="Run and resume baseline model examples. These are not published participant fits.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Start here:\n"
-            "  loco-simulate demo\n"
-            "  loco-simulate run --seed 42 --iterations 100 --stop-after 40\n"
-            "  loco-simulate resume outputs/run/checkpoint.npz\n\n"
+            "  invLocAd-simulate demo\n"
+            "  invLocAd-simulate run --seed 42 --iterations 100 --stop-after 40\n"
+            "  invLocAd-simulate resume outputs/run/checkpoint.npz\n\n"
             "Use COMMAND --help for options. Options without a command run a single simulation."
         ),
     )
@@ -173,7 +173,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the ``loco-simulate`` command line.
+    """Run the ``invLocAd-simulate`` command line.
 
     Arguments that start with an option rather than a command use the option-only
     parser, which saves nothing unless ``--output-dir`` or ``--checkpoint`` is given.

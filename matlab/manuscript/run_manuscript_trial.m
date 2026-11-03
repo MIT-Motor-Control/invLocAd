@@ -28,7 +28,7 @@ arguments
     options.speed_divisor (1,1) double {mustBePositive, mustBeFinite} = 2
 end
 if options.seed > 2^32 - 1 || (~isinf(options.max_iterations) && mod(options.max_iterations, 1) ~= 0)
-    error('LocAd:InvalidConfiguration', 'Seed must fit uint32 and max_iterations must be an integer or Inf.');
+    error('invLocAd:InvalidConfiguration', 'Seed must fit uint32 and max_iterations must be an integer or Inf.');
 end
 here = fileparts(mfilename('fullpath'));
 old_path = path;
@@ -45,7 +45,7 @@ if isfile(output_file)
     result = load(output_file);
     if ~isfield(result, 'metadata') || ~isequaln(result.metadata.options, options) || ...
             ~isequal(result.metadata.engine_source, source)
-        error('LocAd:CheckpointMismatch', 'Existing trial uses different settings or engine source. Choose a new output file.');
+        error('invLocAd:CheckpointMismatch', 'Existing trial uses different settings or engine source. Choose a new output file.');
     end
     validate_result(result);
     fprintf('Loaded completed trial: %s\n', output_file);
@@ -80,16 +80,16 @@ end
 function validate_result(result)
 % Check the saved-trial schema and that the required results are finite.
 if ~isfield(result, 'metadata') || result.metadata.schema_version ~= 1 || ~strcmp(result.metadata.kind, 'completed_trial')
-    error('LocAd:InvalidResult', 'Unsupported saved-trial schema.');
+    error('invLocAd:InvalidResult', 'Unsupported saved-trial schema.');
 end
 required = {'energy', 'time', 'sla', 'sta', 'param', 'fall_flag'};
 for i = 1:numel(required)
     if ~isfield(result, required{i}) || isempty(result.(required{i})) || any(~isfinite(result.(required{i})), 'all')
-        error('LocAd:InvalidResult', 'Missing, empty or nonfinite result: %s', required{i});
+        error('invLocAd:InvalidResult', 'Missing, empty or nonfinite result: %s', required{i});
     end
 end
 if size(result.param, 1) ~= 8 || numel(result.energy) ~= numel(result.time)
-    error('LocAd:InvalidResult', 'Unexpected controller or time-series dimensions.');
+    error('invLocAd:InvalidResult', 'Unexpected controller or time-series dimensions.');
 end
 end
 

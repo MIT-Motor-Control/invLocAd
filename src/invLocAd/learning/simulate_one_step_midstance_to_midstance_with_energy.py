@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.learning.simulate_ip_until_endstance import (
+from invLocAd.learning.simulate_ip_until_endstance import (
     simulate_ip_until_endstance,
 )
-from locomotor_learning_model.learning.simulate_ip_until_midstance import (
+from invLocAd.learning.simulate_ip_until_midstance import (
     simulate_ip_until_midstance,
 )
-from locomotor_learning_model.learning.swing_cost_doke import swing_cost_doke
+from invLocAd.learning.swing_cost_doke import swing_cost_doke
 
 
 def simulate_one_step_midstance_to_midstance_with_energy(

@@ -1,21 +1,21 @@
 # Data
 
-The experimental measurements and saved simulations are in the DATA archive of the [Zenodo record](https://doi.org/10.5281/zenodo.23402153). The archive's own `README.md` describes file formats, units, participant groups and missing values.
+The experimental measurements and saved simulations are in the DATA archive of the [Zenodo record](https://doi.org/10.5281/zenodo.23904047). The archive's own `README.md` describes file formats, units, participant groups and missing values.
 
 ## Install
 
-With the `loco-ada` environment active, from the repository root:
+With the `invLocAd` environment active, from the repository root:
 
 ```sh
 python scripts/download_data.py
 ```
 
-This downloads `locomotor_learning_model-DATA.zip` (13.27 GB), verifies its size and SHA-256 checksum, and extracts it to `data/locomotor_learning_model-DATA/` (14.88 GB). Allow 30 GB of free space. If the download is interrupted, rerun the command; it resumes when the server supports it. Downloads are cached in `outputs/data-download/23402153/` and removed after a successful installation unless `--keep-downloads` is given. An existing DATA folder is never overwritten; use `--destination` to install elsewhere.
+This downloads `invLocAd-DATA.zip` (13.27 GB), verifies its size and SHA-256 checksum, and extracts it to `data/invLocAd-DATA/` (14.88 GB). Allow 30 GB of free space. If the download is interrupted, rerun the command; it resumes when the server supports it. Downloads are cached in `outputs/data-download/23904047/` and removed after a successful installation unless `--keep-downloads` is given. An existing DATA folder is never overwritten; use `--destination` to install elsewhere.
 
 To install a ZIP that you downloaded yourself:
 
 ```sh
-python scripts/download_data.py --archive /path/to/locomotor_learning_model-DATA.zip
+python scripts/download_data.py --archive /path/to/invLocAd-DATA.zip
 ```
 
 This applies the same checks without network access and leaves the ZIP unchanged. Extracting the ZIP manually into `data/` also works; keep the inner `publication-data.zip` compressed.
@@ -23,11 +23,11 @@ This applies the same checks without network access and leaves the ZIP unchanged
 Then prepare the analysis inputs:
 
 ```sh
-loco-publication prepare
-loco-publication verify-data
+invLocAd-publication prepare
+invLocAd-publication verify-data
 ```
 
-`prepare` writes the 5,166 checked inputs and their checksums to `data/publication/`. For a DATA folder outside the repository, use `loco-publication prepare --source /path/to/locomotor_learning_model-DATA`; the raw recordings are not copied. Repeating `prepare` with the same inputs is safe.
+`prepare` writes the 5,166 checked inputs and their checksums to `data/publication/`. For a DATA folder outside the repository, use `invLocAd-publication prepare --source /path/to/invLocAd-DATA`; the raw recordings are not copied. Repeating `prepare` with the same inputs is safe.
 
 ## Contents of the DATA folder
 

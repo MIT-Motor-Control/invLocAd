@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from locomotor_learning_model.learning.simulate_one_step_midstance_to_midstance_with_energy import (
+from invLocAd.learning.simulate_one_step_midstance_to_midstance_with_energy import (
     simulate_one_step_midstance_to_midstance_with_energy,
 )
 

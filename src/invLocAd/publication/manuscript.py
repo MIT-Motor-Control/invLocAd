@@ -106,7 +106,7 @@ def numerical_claims(results_root: Path, reproduction: dict) -> list[dict]:
     """Compare the reproduction tables with every numerical claim checked against the paper.
 
     Args:
-        results_root: Directory written by ``loco-publication reproduce``.
+        results_root: Directory written by ``invLocAd-publication reproduce``.
         reproduction: Its verified ``report.json`` contents.
 
     Returns:
@@ -429,7 +429,7 @@ def validate_manuscript(
     Args:
         manuscript: Optional PDF of the paper; only its SHA-256 is recorded.
         data_root: Prepared publication inputs used by the reproduction.
-        results_root: Output directory of ``loco-publication reproduce``.
+        results_root: Output directory of ``invLocAd-publication reproduce``.
         output: Empty directory for ``report.json`` and ``report.md``.
 
     Returns:
