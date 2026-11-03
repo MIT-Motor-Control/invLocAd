@@ -1,18 +1,10 @@
 # Data
 
-The experimental measurements and saved simulations are archived on [Zenodo](https://doi.org/10.5281/zenodo.19547419). The archive's own `README.md` describes file formats, units, participant groups and missing values.
-
-Version 0.4.0 uses `invLocAd-DATA.zip`. Its Zenodo release is awaiting publication; the public link currently opens version 0.3.0, whose differently named DATA ZIP has a different checksum. Until publication, install a locally supplied version 0.4.0 ZIP with the command below.
+The experimental measurements and saved simulations for version 0.4.0 are archived as `invLocAd-DATA.zip` on [Zenodo](https://doi.org/10.5281/zenodo.23904047). The archive's own `README.md` describes file formats, units, participant groups and missing values.
 
 ## Install
 
-With the `invLocAd` environment active, install a local ZIP from the repository root:
-
-```sh
-python scripts/download_data.py --archive /path/to/invLocAd-DATA.zip
-```
-
-After the matching release is published on Zenodo, download it directly:
+With the `invLocAd` environment active, download and install the data from the repository root:
 
 ```sh
 python scripts/download_data.py
@@ -20,7 +12,13 @@ python scripts/download_data.py
 
 This downloads `invLocAd-DATA.zip` (13.27 GB), verifies its size and SHA-256 checksum, and extracts it to `data/invLocAd-DATA/` (14.88 GB). Allow 30 GB of free space. If the download is interrupted, rerun the command; it resumes when the server supports it. Downloads are cached in `outputs/data-download/23904047/` and removed after a successful installation unless `--keep-downloads` is given. An existing DATA folder is never overwritten; use `--destination` to install elsewhere.
 
-The local-ZIP command applies the same checks without network access and leaves the ZIP unchanged. Extracting the ZIP manually into `data/` also works; keep the inner `publication-data.zip` compressed.
+To install a ZIP you already downloaded:
+
+```sh
+python scripts/download_data.py --archive /path/to/invLocAd-DATA.zip
+```
+
+This applies the same checks without network access and leaves the ZIP unchanged. Extracting the ZIP manually into `data/` also works; keep the inner `publication-data.zip` compressed.
 
 Then prepare the analysis inputs:
 

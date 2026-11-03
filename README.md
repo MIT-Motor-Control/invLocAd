@@ -1,10 +1,8 @@
 # invLocAd
 
-Code for **Safety prioritization shapes locomotor adaptation and performance** by Inseung Kang, Kanishka Mitra and Nidhi Seethapathi. The paper refers to this implementation as invLocAd. The preprint has the earlier title *Fall risk-aware adaptation explains suboptimal locomotor performance*.
+Code for **Safety prioritization shapes locomotor adaptation and performance** by Inseung Kang, Kanishka Mitra and Nidhi Seethapathi. The preprint has the earlier title *Fall risk-aware adaptation explains suboptimal locomotor performance*.
 
-[Code and data (Zenodo)](https://doi.org/10.5281/zenodo.19547419) · [Preprint](https://doi.org/10.64898/2026.03.02.709033) · [Model guide](docs/model.md) · [Reproduction guide](docs/reproducibility.md)
-
-**Release status:** GitHub contains version 0.4.0. Its matching Zenodo archive is awaiting publication; the public Zenodo link currently opens version 0.3.0. Use GitHub for the current code and an `invLocAd-DATA.zip` supplied with version 0.4.0 for its data.
+[Code and data (Zenodo)](https://doi.org/10.5281/zenodo.23904047) · [Preprint](https://doi.org/10.64898/2026.03.02.709033) · [Model guide](docs/model.md) · [Reproduction guide](docs/reproducibility.md)
 
 ## Contents
 
@@ -27,7 +25,7 @@ conda activate invLocAd
 invLocAd-simulate demo
 ```
 
-You can also use GitHub **Code → Download ZIP**. Extract it and open a terminal in the extracted repository before running the Conda commands above.
+You can also download `invLocAd-CODE.zip` from Zenodo or use GitHub **Code → Download ZIP**. Extract it and open a terminal in the extracted repository before running the Conda commands above.
 
 The demo runs 40 learning iterations in a few seconds and writes `outputs/demo/split_belt_summary.png`. Activate `invLocAd` in each new terminal before running the commands below.
 
@@ -55,21 +53,21 @@ A resumed run is identical to an uninterrupted run with the same seed. These sim
 
 ## Reproduce the paper
 
-**1. Install the data** (13 GB):
+**1. Install the data** (~13 GB):
 
-While the matching Zenodo release is unpublished, install a local copy of its DATA ZIP:
-
-```sh
-python scripts/download_data.py --archive /path/to/invLocAd-DATA.zip
-```
-
-After the version 0.4.0 archive is published on Zenodo, download it directly:
+Download the matching DATA ZIP from Zenodo:
 
 ```sh
 python scripts/download_data.py
 ```
 
-Both commands verify the ZIP's checksum and extract it to `data/invLocAd-DATA/`. Rerun the download command to resume an interrupted transfer. The [data guide](data/README.md) describes the files. The earlier, differently named DATA archive on Zenodo does not match this release's checksum.
+To install a ZIP you already downloaded:
+
+```sh
+python scripts/download_data.py --archive /path/to/invLocAd-DATA.zip
+```
+
+Both commands verify the ZIP's checksum and extract it to `data/invLocAd-DATA/`. Rerun the download command to resume an interrupted transfer. The [data guide](data/README.md) describes the files.
 
 **2. Prepare the inputs and reproduce the figures:**
 

@@ -24,8 +24,8 @@ Repeated runs in one environment give identical tables, except the double-expone
 
 ## DATA archive
 
-`invLocAd-DATA.zip`: 13,269,858,121 bytes, SHA-256
+`invLocAd-DATA.zip`: 13,269,858,226 bytes, SHA-256
 
 ```text
-16ce92fd0fac4fc5a3686e4bcd0180f80f5bd84a0ec928e95e8de4826cdb7ffd
+4af953423124bb3060f712334a0f49b5a6640d8bcc67e89d533e695eed359d5a
 ```
